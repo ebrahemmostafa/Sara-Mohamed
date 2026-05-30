@@ -228,7 +228,7 @@
         </div>
         <img src="assets/envelope-CIt3WX3F.png" alt="Embossed floral envelope" width="768" height="768" loading="lazy" class="mx-auto mt-6 w-64 object-contain" />
         <div class="mt-10">
-          <form class="mx-auto max-w-md space-y-7 text-left">
+          <form id="rsvp-form" class="mx-auto max-w-md space-y-7 text-left" aria-describedby="rsvp-status">
             <div>
               <span class="block mb-2 text-sm text-foreground">Will you attend? *</span>
               <div class="flex flex-wrap items-center gap-x-8 gap-y-3">
@@ -242,7 +242,7 @@
             </div>
             <div>
               <label class="block mb-2 text-sm text-foreground" for="fullname">Guest name *</label>
-              <input id="fullname" required="" class="w-full rounded-md border border-input bg-card/60 px-4 py-3 text-base text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-olive focus:ring-2 focus:ring-olive/20" placeholder="Your name" />
+              <input id="fullname" name="fullname" required="" class="w-full rounded-md border border-input bg-card/60 px-4 py-3 text-base text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-olive focus:ring-2 focus:ring-olive/20" placeholder="Your name" />
             </div>
             
             
@@ -273,7 +273,7 @@
          
             <div>
               <label class="block mb-2 text-sm text-foreground" for="message">Your Message</label>
-              <textarea id="message" rows="3" class="w-full rounded-md border border-input bg-card/60 px-4 py-3 text-base text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-olive focus:ring-2 focus:ring-olive/20 resize-none" placeholder="Write a few words here .."></textarea>
+              <textarea id="message" name="message" rows="3" class="w-full rounded-md border border-input bg-card/60 px-4 py-3 text-base text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-olive focus:ring-2 focus:ring-olive/20 resize-none" placeholder="Write a few words here .."></textarea>
             </div>
             <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-md bg-olive py-3.5 text-base font-medium text-olive-foreground shadow-sm transition hover:opacity-90 active:scale-[0.99]">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send h-4 w-4" aria-hidden="true">
@@ -281,6 +281,7 @@
                 <path d="m21.854 2.147-10.94 10.939"></path>
               </svg>Send Message
             </button>
+            <p id="rsvp-status" class="text-center text-sm text-muted-foreground" aria-live="polite"></p>
           </form>
         </div>
       </section>
@@ -293,6 +294,7 @@
       </footer>
     </div>
     <audio id="wedding-song" src="assets/Stephen Sanchez - Until I Found You trimmed.mp3" autoplay loop preload="auto"></audio>
+    <script src="assets/rsvp-store.js?v=20260530-global"></script>
     <script>
       /* ── Live Countdown to 4 JUL 2026 at 19:00 Cairo (UTC+2) ── */
       (function () {
@@ -361,7 +363,82 @@
           updateAdultControls();
         });
 
+        document.addEventListener('rsvp:reset-companions', function () {
+          adults = 0;
+          adultCompanions.innerHTML = '';
+          updateAdultControls();
+        });
+
         updateAdultControls();
+      })();
+
+      /* Store RSVP responses for the attendance page */
+      (function () {
+        var form = document.getElementById('rsvp-form');
+        var status = document.getElementById('rsvp-status');
+        var submitButton = form ? form.querySelector('button[type="submit"]') : null;
+
+        if (!form) return;
+
+        function setStatus(message, isError) {
+          if (!status) return;
+          status.textContent = message;
+          status.style.color = isError ? 'var(--destructive)' : 'var(--muted-foreground)';
+        }
+
+        function setSubmitting(isSubmitting) {
+          if (!submitButton) return;
+          submitButton.disabled = isSubmitting;
+          submitButton.style.opacity = isSubmitting ? '.7' : '1';
+          submitButton.style.cursor = isSubmitting ? 'wait' : 'pointer';
+        }
+
+        function getAdultInputs() {
+          return Array.prototype.slice.call(document.querySelectorAll('#adult-companions input'));
+        }
+
+        form.addEventListener('submit', async function (event) {
+          event.preventDefault();
+
+          var attendingInput = form.querySelector('input[name="attending"]:checked');
+          var fullname = document.getElementById('fullname');
+          var message = document.getElementById('message');
+          var guestName = fullname ? fullname.value.trim() : '';
+
+          if (!guestName) {
+            setStatus('Please write your name first.', true);
+            if (fullname) fullname.focus();
+            return;
+          }
+
+          var adultInputs = getAdultInputs();
+          var companions = adultInputs
+            .map(function (input) { return input.value.trim(); })
+            .filter(Boolean);
+
+          setSubmitting(true);
+          setStatus('Saving your RSVP...', false);
+
+          try {
+            await window.RsvpStore.add({
+              attending: attendingInput ? attendingInput.value : 'yes',
+              guestName: guestName,
+              companionCount: adultInputs.length,
+              companions: companions,
+              message: message ? message.value.trim() : ''
+            });
+
+            form.reset();
+            var attendingYes = document.getElementById('attending-yes');
+            if (attendingYes) attendingYes.checked = true;
+            document.dispatchEvent(new Event('rsvp:reset-companions'));
+            setStatus('Thank you, your RSVP has been saved.', false);
+          } catch (error) {
+            setStatus('The response could not be saved. Please try again.', true);
+          } finally {
+            setSubmitting(false);
+          }
+        });
       })();
 
       /* Autoplay local wedding song */

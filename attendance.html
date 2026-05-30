@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="assets/styles-CB5R1myc.css" data-precedence="default" />
+    <title>RSVP Responses - Mohamed &amp; Sara</title>
+    <style>
+      body {
+        min-height: 100vh;
+        background: var(--background);
+        color: var(--foreground);
+      }
+
+      .dashboard {
+        width: min(100%, 1080px);
+        margin: 0 auto;
+        padding: 2rem 1rem 3rem;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 1.25rem;
+      }
+
+      .title {
+        font-family: var(--font-script);
+        font-size: clamp(3.25rem, 10vw, 5.75rem);
+        line-height: 1;
+      }
+
+      .subtitle {
+        margin-top: .5rem;
+        color: var(--muted-foreground);
+        font-size: 1rem;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .65rem;
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 2.55rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--olive);
+        border-radius: 8px;
+        background: var(--olive);
+        color: var(--olive-foreground);
+        padding: 0 .95rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: opacity .15s ease, transform .15s ease;
+      }
+
+      .button:hover {
+        opacity: .9;
+      }
+
+      .button:active {
+        transform: translateY(1px);
+      }
+
+      .button.secondary {
+        background: var(--card);
+        color: var(--foreground);
+        border-color: var(--border);
+      }
+
+      .button.danger {
+        background: var(--destructive);
+        border-color: var(--destructive);
+      }
+
+      .button:disabled {
+        cursor: not-allowed;
+        opacity: .55;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: .75rem;
+        margin-top: 1.5rem;
+      }
+
+      .stat-card,
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--card);
+        box-shadow: 0 12px 30px rgba(72, 55, 38, .08);
+      }
+
+      .stat-card {
+        padding: 1rem;
+      }
+
+      .stat-value {
+        display: block;
+        font-family: var(--font-serif);
+        font-size: clamp(2.15rem, 7vw, 3.4rem);
+        font-weight: 600;
+        line-height: 1;
+      }
+
+      .stat-label {
+        display: block;
+        margin-top: .45rem;
+        color: var(--muted-foreground);
+        font-size: .86rem;
+      }
+
+      .panel {
+        margin-top: 1rem;
+        overflow: hidden;
+      }
+
+      .panel-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        border-bottom: 1px solid var(--border);
+        padding: 1rem;
+      }
+
+      .panel-title {
+        font-size: 1.35rem;
+        font-weight: 600;
+      }
+
+      .panel-note {
+        color: var(--muted-foreground);
+        font-size: .9rem;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: .85rem 1rem;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted-foreground);
+        font-size: .72rem;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .badge {
+        display: inline-flex;
+        border-radius: 999px;
+        padding: .2rem .55rem;
+        font-size: .8rem;
+        font-weight: 600;
+      }
+
+      .badge.yes {
+        background: color-mix(in oklab, var(--olive) 14%, transparent);
+        color: var(--olive);
+      }
+
+      .badge.no {
+        background: color-mix(in oklab, var(--destructive) 13%, transparent);
+        color: var(--destructive);
+      }
+
+      .muted {
+        color: var(--muted-foreground);
+      }
+
+      .messages-list {
+        display: grid;
+        gap: .75rem;
+        padding: 1rem;
+      }
+
+      .message-item {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+        background: rgba(255, 255, 255, .22);
+      }
+
+      .message-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .4rem .7rem;
+        color: var(--muted-foreground);
+        font-size: .85rem;
+      }
+
+      .message-text {
+        margin-top: .6rem;
+        white-space: pre-wrap;
+        line-height: 1.6;
+      }
+
+      .empty {
+        padding: 1rem;
+        color: var(--muted-foreground);
+      }
+
+      @media (max-width: 640px) {
+        .dashboard {
+          padding-top: 1.25rem;
+        }
+
+        .actions,
+        .button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Wedding RSVP dashboard</p>
+          <h1 class="title">Mohamed &amp; Sara</h1>
+          <p class="subtitle">Attendance confirmations and messages saved from the shared invitation form.</p>
+        </div>
+        <div class="actions">
+          <a class="button secondary" href="index.html">Invitation</a>
+          <button id="refresh-responses" class="button secondary" type="button">Refresh</button>
+          <button id="export-csv" class="button" type="button">Export CSV</button>
+          <button id="clear-responses" class="button danger" type="button">Clear</button>
+        </div>
+      </header>
+
+      <section class="stats-grid" aria-label="RSVP totals">
+        <article class="stat-card">
+          <span id="confirmed-guests" class="stat-value">0</span>
+          <span class="stat-label">Confirmed attendance</span>
+        </article>
+        <article class="stat-card">
+          <span id="yes-replies" class="stat-value">0</span>
+          <span class="stat-label">Yes replies</span>
+        </article>
+        <article class="stat-card">
+          <span id="no-replies" class="stat-value">0</span>
+          <span class="stat-label">Cannot attend</span>
+        </article>
+        <article class="stat-card">
+          <span id="message-count" class="stat-value">0</span>
+          <span class="stat-label">Messages</span>
+        </article>
+        <article class="stat-card">
+          <span id="response-count" class="stat-value">0</span>
+          <span class="stat-label">Total responses</span>
+        </article>
+      </section>
+
+      <section class="panel" aria-labelledby="responses-title">
+        <div class="panel-header">
+          <h2 id="responses-title" class="panel-title">Responses</h2>
+          <p id="last-updated" class="panel-note">No responses yet</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>Guest</th>
+                <th>Total people</th>
+                <th>Adult companions</th>
+                <th>Message</th>
+              </tr>
+            </thead>
+            <tbody id="response-table">
+              <tr>
+                <td colspan="6" class="empty">No responses saved yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="messages-title">
+        <div class="panel-header">
+          <h2 id="messages-title" class="panel-title">Messages</h2>
+          <p class="panel-note">Notes from guests</p>
+        </div>
+        <div id="messages-list" class="messages-list">
+          <p class="empty">No messages saved yet.</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="assets/rsvp-store.js?v=20260530-global"></script>
+    <script>
+      (function () {
+        var refreshButton = document.getElementById('refresh-responses');
+        var exportButton = document.getElementById('export-csv');
+        var clearButton = document.getElementById('clear-responses');
+        var clearArmed = false;
+        var clearTimer;
+        var cachedResponses = [];
+
+        function byId(id) {
+          return document.getElementById(id);
+        }
+
+        function writeText(id, value) {
+          var element = byId(id);
+          if (element) element.textContent = value;
+        }
+
+        function escapeHtml(value) {
+          return String(value == null ? '' : value).replace(/[&<>"']/g, function (character) {
+            return {
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
+              '"': '&quot;',
+              "'": '&#039;'
+            }[character];
+          });
+        }
+
+        function formatDate(value) {
+          var date = new Date(value);
+          if (Number.isNaN(date.getTime())) return 'Unknown';
+
+          return date.toLocaleString([], {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }
+
+        function getCompanionCount(response) {
+          if (typeof response.companionCount === 'number') {
+            return response.companionCount;
+          }
+
+          if (Array.isArray(response.companions)) {
+            return response.companions.length;
+          }
+
+          return 0;
+        }
+
+        function getTotalPeople(response) {
+          return response.attending === 'yes' ? 1 + getCompanionCount(response) : 0;
+        }
+
+        function getCompanionText(response) {
+          var count = getCompanionCount(response);
+          var names = Array.isArray(response.companions) ? response.companions.filter(Boolean) : [];
+
+          if (!count) return 'None';
+          if (!names.length) return count + ' adult' + (count === 1 ? '' : 's');
+
+          return count + ': ' + names.join(', ');
+        }
+
+        function renderStats(responses) {
+          var yesReplies = responses.filter(function (response) {
+            return response.attending === 'yes';
+          });
+          var noReplies = responses.filter(function (response) {
+            return response.attending === 'no';
+          });
+          var confirmedGuests = yesReplies.reduce(function (total, response) {
+            return total + getTotalPeople(response);
+          }, 0);
+          var messages = responses.filter(function (response) {
+            return response.message && response.message.trim();
+          });
+
+          writeText('confirmed-guests', confirmedGuests);
+          writeText('yes-replies', yesReplies.length);
+          writeText('no-replies', noReplies.length);
+          writeText('message-count', messages.length);
+          writeText('response-count', responses.length);
+        }
+
+        function renderTable(responses) {
+          var table = byId('response-table');
+          if (!table) return;
+
+          if (!responses.length) {
+            table.innerHTML = '<tr><td colspan="6" class="empty">No responses saved yet.</td></tr>';
+            return;
+          }
+
+          table.innerHTML = responses.map(function (response) {
+            var isAttending = response.attending === 'yes';
+            var message = response.message && response.message.trim() ? response.message : 'None';
+
+            return [
+              '<tr>',
+              '<td>' + escapeHtml(formatDate(response.submittedAt)) + '</td>',
+              '<td><span class="badge ' + (isAttending ? 'yes' : 'no') + '">' + (isAttending ? 'Yes' : 'No') + '</span></td>',
+              '<td>' + escapeHtml(response.guestName || 'Unknown') + '</td>',
+              '<td>' + getTotalPeople(response) + '</td>',
+              '<td>' + escapeHtml(getCompanionText(response)) + '</td>',
+              '<td>' + escapeHtml(message) + '</td>',
+              '</tr>'
+            ].join('');
+          }).join('');
+        }
+
+        function renderMessages(responses) {
+          var list = byId('messages-list');
+          if (!list) return;
+
+          var messages = responses.filter(function (response) {
+            return response.message && response.message.trim();
+          });
+
+          if (!messages.length) {
+            list.innerHTML = '<p class="empty">No messages saved yet.</p>';
+            return;
+          }
+
+          list.innerHTML = messages.map(function (response) {
+            return [
+              '<article class="message-item">',
+              '<div class="message-meta">',
+              '<strong>' + escapeHtml(response.guestName || 'Unknown') + '</strong>',
+              '<span>' + escapeHtml(formatDate(response.submittedAt)) + '</span>',
+              '<span>' + (response.attending === 'yes' ? 'Attending' : 'Cannot attend') + '</span>',
+              '</div>',
+              '<p class="message-text">' + escapeHtml(response.message) + '</p>',
+              '</article>'
+            ].join('');
+          }).join('');
+        }
+
+        function setBusy(isBusy) {
+          if (refreshButton) refreshButton.disabled = isBusy;
+          if (exportButton) exportButton.disabled = isBusy || cachedResponses.length === 0;
+          if (clearButton) clearButton.disabled = isBusy || cachedResponses.length === 0;
+        }
+
+        function renderError(message) {
+          var table = byId('response-table');
+          var list = byId('messages-list');
+
+          renderStats([]);
+          if (table) table.innerHTML = '<tr><td colspan="6" class="empty">' + escapeHtml(message) + '</td></tr>';
+          if (list) list.innerHTML = '<p class="empty">' + escapeHtml(message) + '</p>';
+          writeText('last-updated', message);
+        }
+
+        async function render() {
+          setBusy(true);
+          writeText('last-updated', 'Loading responses...');
+
+          try {
+            cachedResponses = (await window.RsvpStore.list()).slice().sort(function (a, b) {
+              return new Date(b.submittedAt || 0).getTime() - new Date(a.submittedAt || 0).getTime();
+            });
+            var lastUpdated = cachedResponses.length ? 'Last response: ' + formatDate(cachedResponses[0].submittedAt) : 'No responses yet';
+
+            renderStats(cachedResponses);
+            renderTable(cachedResponses);
+            renderMessages(cachedResponses);
+            writeText('last-updated', lastUpdated);
+          } catch (error) {
+            cachedResponses = [];
+            renderError('Could not load the shared RSVP responses. Please refresh.');
+          } finally {
+            setBusy(false);
+          }
+        }
+
+        function escapeCsv(value) {
+          var text = String(value == null ? '' : value);
+          return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+        }
+
+        function exportCsv() {
+          var responses = cachedResponses;
+          if (!responses.length) return;
+
+          var rows = [
+            ['Submitted at', 'Attending', 'Guest name', 'Total people', 'Adult companion count', 'Adult companion names', 'Message']
+          ].concat(responses.map(function (response) {
+            var names = Array.isArray(response.companions) ? response.companions.join(', ') : '';
+            return [
+              response.submittedAt || '',
+              response.attending === 'yes' ? 'Yes' : 'No',
+              response.guestName || '',
+              getTotalPeople(response),
+              getCompanionCount(response),
+              names,
+              response.message || ''
+            ];
+          }));
+          var csv = rows.map(function (row) {
+            return row.map(escapeCsv).join(',');
+          }).join('\r\n');
+          var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+
+          link.href = url;
+          link.download = 'mohamed-sara-rsvp-responses.csv';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          URL.revokeObjectURL(url);
+        }
+
+        function resetClearButton() {
+          clearArmed = false;
+          if (clearButton) clearButton.textContent = 'Clear';
+        }
+
+        async function clearResponses() {
+          if (!cachedResponses.length) return;
+
+          if (!clearArmed) {
+            clearArmed = true;
+            if (clearButton) clearButton.textContent = 'Click again to clear';
+            window.clearTimeout(clearTimer);
+            clearTimer = window.setTimeout(resetClearButton, 4000);
+            return;
+          }
+
+          window.clearTimeout(clearTimer);
+          setBusy(true);
+
+          try {
+            await window.RsvpStore.clear();
+            cachedResponses = [];
+            resetClearButton();
+            await render();
+          } catch (error) {
+            writeText('last-updated', 'Could not clear the shared RSVP responses. Please try again.');
+            resetClearButton();
+          } finally {
+            setBusy(false);
+          }
+        }
+
+        if (refreshButton) refreshButton.addEventListener('click', render);
+        if (exportButton) exportButton.addEventListener('click', exportCsv);
+        if (clearButton) clearButton.addEventListener('click', clearResponses);
+        render();
+      })();
+    </script>
+  </body>
+</html>
